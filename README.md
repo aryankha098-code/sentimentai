@@ -48,17 +48,17 @@ powered by a custom NLP engine and a professional FastAPI + JavaScript frontend.
 
 ## ✨ Features
 
-| Feature | Description |
-|---|---|
-| **Real-time Sentiment** | Positive / Negative / Neutral classification with compound scoring |
-| **Emotion Detection** | 6-axis wheel — joy, anger, sadness, fear, surprise, trust |
-| **Keyword Extraction** | Sentiment-tagged keywords with frequency counts |
-| **Batch Processing** | Analyze up to 50 texts at once with aggregate statistics |
-| **Trend Dashboard** | 14-day historical sentiment chart with volume bars |
-| **Analysis History** | Click-to-reload past analyses from the sidebar |
-| **JSON Export** | One-click structured export of all results |
-| **Offline Demo Mode** | Frontend works without the backend — great for client demos |
-| **Swagger UI** | Auto-generated interactive API docs at `/docs` |
+| Feature | Description 
+|---|---
+| **Real-time Sentiment** | Positive / Negative / Neutral classification with compound scoring 
+| **Emotion Detection** | 6-axis wheel — joy, anger, sadness, fear, surprise, trust 
+| **Keyword Extraction** | Sentiment-tagged keywords with frequency counts 
+| **Batch Processing** | Analyze up to 50 texts at once with aggregate statistics 
+| **Trend Dashboard** | 14-day historical sentiment chart with volume bars 
+| **Analysis History** | Click-to-reload past analyses from the sidebar 
+| **JSON Export** | One-click structured export of all results 
+| **Offline Demo Mode** | Frontend works without the backend — great for client demos 
+| **Swagger UI** | Auto-generated interactive API docs at `/docs` 
 
 ---
 
