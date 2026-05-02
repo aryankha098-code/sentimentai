@@ -27,19 +27,19 @@ powered by a custom NLP engine and a professional FastAPI + JavaScript frontend.
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│  🧠 SentimentAI          [Text Analyzer] [Batch] [Trends]        │
+│  🧠 SentimentAI          [Text Analyzer] [Batch] [Trends]				 │
 ├──────────────┬───────────────────────────────────────────────────┤
 │              │  ┌───────────────────────────────────────────┐    │
-│  ◈ Analyze   │  │ Input Text                  LIVE ANALYSIS │    │
-│  ◫ Batch     │  │ ┌───────────────────────────────────────┐ │    │
-│  ◬ Trends    │  │ │ Enter text to analyze...              │ │    │
+│  ◈ Analyze	 │    Input Text                  LIVE ANALYSIS  	   │
+│  ◫ Batch  	 │  	┌───────────────────────────────────────┐  	   │
+│  ◬ Trends 	 │      Enter text to analyze...                 	   │
 │              │  │ └───────────────────────────────────────┘ │    │
 │  History     │  │           [ Analyze Sentiment → ]         │    │
 │  ─────────── │  └───────────────────────────────────────────┘    │
-│  ✅ Great... │                                                    │
-│  ❌ Terri... │  Sentiment    Score     Confidence    Words        │
-│  ➖ It's ... │  Positive     0.857     99%           12           │
-│              │                                                    │
+│  ✅ Great..	 │                                             			 │
+│  ❌ Terri..	 │  Sentiment    Score     Confidence    Words    	 │
+│  ➖ It's ..	 │  Positive     0.857     99%           12       	 │
+│              │                                                 	 │
 │  ● API Live  │  [Sentiment Result]      [Emotion Profile]        │
 └──────────────┴───────────────────────────────────────────────────┘
 ```
@@ -66,14 +66,14 @@ powered by a custom NLP engine and a professional FastAPI + JavaScript frontend.
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│                    Browser / Client                       │
-│                  frontend/index.html                      │
+│                    Browser / Client                      │
+│                  frontend/index.html                     │
 │        (Vanilla JS + Chart.js + CSS Custom Properties)   │
 └───────────────────────┬──────────────────────────────────┘
                         │ HTTP REST (JSON)
                         ▼
 ┌──────────────────────────────────────────────────────────┐
-│              FastAPI Backend  :8000                       │
+│              FastAPI Backend  :8000                      │
 │  ┌────────────────────────────────────────────────────┐  │
 │  │                  NLP Pipeline                      │  │
 │  │  Tokenizer → Negation Handler → Intensifier Weight │  │
@@ -388,9 +388,9 @@ See [LICENSE](LICENSE) for full text.
 
 Built by **[Your Name]** — Data Scientist & ML Engineer available for freelance work.
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=flat-square&logo=linkedin)](https://linkedin.com/in/yourhandle)
-[![Upwork](https://img.shields.io/badge/Upwork-Hire_Me-6FDA44?style=flat-square&logo=upwork)](https://upwork.com/freelancers/yourprofile)
-[![Fiverr](https://img.shields.io/badge/Fiverr-Order_Now-1DBF73?style=flat-square&logo=fiverr)](https://fiverr.com/yourusername)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=flat-square&logo=linkedin)]([https://linkedin.com/in/yourhandle](https://www.linkedin.com/in/aryan-khalique-code098/))
+[![Upwork](https://img.shields.io/badge/Upwork-Hire_Me-6FDA44?style=flat-square&logo=upwork)]([https://upwork.com/freelancers/yourprofile](https://upwork.com/freelancers/aryank75))
+[![Fiverr](https://img.shields.io/badge/Fiverr-Order_Now-1DBF73?style=flat-square&logo=fiverr)]([https://fiverr.com/yourusername](https://www.fiverr.com/sellers/aryankhan02/))
 
 ---
 
