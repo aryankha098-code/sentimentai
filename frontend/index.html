@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SentimentAI — NLP Analytics Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #111118;
+    --bg3: #18181f;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #f0f0f5;
+    --muted: #8888aa;
+    --accent: #7c6cfa;
+    --accent2: #a78bfa;
+    --pos: #34d399;
+    --neg: #f87171;
+    --neu: #60a5fa;
+    --pos-bg: rgba(52,211,153,0.08);
+    --neg-bg: rgba(248,113,113,0.08);
+    --neu-bg: rgba(96,165,250,0.08);
+    --font-head: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --glow: 0 0 0 1px rgba(124,108,250,0.3), 0 4px 24px rgba(124,108,250,0.1);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 15px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .layout {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: 100vh;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    padding: 28px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--accent), #c084fc);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .logo-text { font-family: var(--font-head); font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+  .logo-sub { font-size: 11px; color: var(--muted); font-family: var(--font-mono); margin-top: 1px; }
+
+  .nav-section { display: flex; flex-direction: column; gap: 4px; }
+  .nav-label { font-size: 10px; font-family: var(--font-mono); color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; padding: 0 8px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: var(--radius-sm);
+    color: var(--muted); font-size: 14px; font-weight: 400;
+    cursor: pointer; transition: all 0.15s; border: 1px solid transparent;
+  }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: rgba(124,108,250,0.12); color: var(--accent2); border-color: rgba(124,108,250,0.25); }
+  .nav-icon { font-size: 15px; width: 18px; text-align: center; }
+
+  .status-badge {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 12px; border-radius: var(--radius-sm);
+    background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.2);
+    font-size: 12px; color: var(--pos); font-family: var(--font-mono);
+    margin-top: auto;
+  }
+  .status-dot { width: 7px; height: 7px; background: var(--pos); border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* ── Main ── */
+  .main { display: flex; flex-direction: column; }
+
+  .topbar {
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(10,10,15,0.8);
+    backdrop-filter: blur(12px);
+    position: sticky; top: 0; z-index: 10;
+  }
+
+  .page-title { font-family: var(--font-head); font-size: 22px; font-weight: 700; letter-spacing: -0.4px; }
+  .page-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+  .topbar-actions { display: flex; gap: 10px; }
+  .btn {
+    padding: 8px 16px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    font-family: var(--font-body); transition: all 0.15s; border: none;
+  }
+  .btn-ghost { background: var(--bg3); color: var(--muted); border: 1px solid var(--border2); }
+  .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+  .btn-accent { background: var(--accent); color: white; }
+  .btn-accent:hover { background: #6b5be6; }
+  .btn-accent:disabled { background: var(--bg3); color: var(--muted); cursor: not-allowed; }
+
+  .content { padding: 28px 32px; display: flex; flex-direction: column; gap: 24px; }
+
+  /* ── Input Panel ── */
+  .input-panel {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+
+  .panel-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .panel-title { font-family: var(--font-head); font-weight: 600; font-size: 15px; }
+  .panel-badge { font-size: 10px; font-family: var(--font-mono); color: var(--accent2); background: rgba(124,108,250,0.12); padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(124,108,250,0.2); }
+
+  .input-area {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    resize: vertical;
+    min-height: 100px;
+    line-height: 1.6;
+    transition: border-color 0.15s;
+    outline: none;
+  }
+  .input-area:focus { border-color: var(--accent); box-shadow: var(--glow); }
+  .input-area::placeholder { color: var(--muted); }
+
+  .input-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 12px;
+  }
+  .char-count { font-size: 12px; font-family: var(--font-mono); color: var(--muted); }
+  .sample-btn {
+    font-size: 12px; color: var(--accent2); background: none; border: none;
+    cursor: pointer; font-family: var(--font-body);
+    text-decoration: underline; text-underline-offset: 3px;
+  }
+  .sample-btn:hover { color: var(--accent); }
+
+  .analyze-btn {
+    margin-top: 12px;
+    width: 100%; padding: 12px;
+    background: linear-gradient(135deg, var(--accent), #a78bfa);
+    border: none; border-radius: var(--radius-sm);
+    color: white; font-size: 15px; font-weight: 600;
+    font-family: var(--font-head); cursor: pointer;
+    transition: all 0.2s; letter-spacing: -0.2px;
+  }
+  .analyze-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(124,108,250,0.35); }
+  .analyze-btn:active { transform: translateY(0); }
+  .analyze-btn:disabled { background: var(--bg3); color: var(--muted); cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* ── Score Grid ── */
+  .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+
+  .metric-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px;
+    transition: border-color 0.2s;
+    position: relative; overflow: hidden;
+  }
+  .metric-card::before {
+    content: ''; position: absolute; inset: 0;
+    opacity: 0; transition: opacity 0.2s;
+    border-radius: var(--radius);
+  }
+  .metric-card.pos::before { background: var(--pos-bg); }
+  .metric-card.neg::before { background: var(--neg-bg); }
+  .metric-card.neu::before { background: var(--neu-bg); }
+  .metric-card.active-pos { border-color: rgba(52,211,153,0.4); }
+  .metric-card.active-neg { border-color: rgba(248,113,113,0.4); }
+  .metric-card.active-neu { border-color: rgba(96,165,250,0.4); }
+  .metric-card.active-pos::before, .metric-card.active-neg::before, .metric-card.active-neu::before { opacity: 1; }
+
+  .metric-label { font-size: 11px; font-family: var(--font-mono); color: var(--muted); text-transform: uppercase; letter-spacing: 1px; position: relative; }
+  .metric-value { font-size: 32px; font-family: var(--font-head); font-weight: 800; margin: 8px 0 4px; position: relative; letter-spacing: -1px; }
+  .metric-sub { font-size: 12px; color: var(--muted); position: relative; }
+
+  /* ── Results Panel ── */
+  .results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+  .panel {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 22px;
+  }
+
+  /* Sentiment bar */
+  .sentiment-display {
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 16px; padding: 12px 0;
+  }
+  .sentiment-label {
+    font-family: var(--font-head); font-size: 36px; font-weight: 800;
+    letter-spacing: -1px;
+  }
+  .sentiment-label.positive { color: var(--pos); }
+  .sentiment-label.negative { color: var(--neg); }
+  .sentiment-label.neutral { color: var(--neu); }
+
+  .score-bar-wrap { width: 100%; }
+  .score-bar-labels { display: flex; justify-content: space-between; font-size: 11px; font-family: var(--font-mono); color: var(--muted); margin-bottom: 6px; }
+  .score-bar-track { height: 8px; background: var(--bg3); border-radius: 4px; overflow: hidden; }
+  .score-bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.34,1.56,0.64,1); }
+
+  .confidence-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px; border-radius: 20px;
+    font-size: 12px; font-family: var(--font-mono);
+    background: rgba(124,108,250,0.1); border: 1px solid rgba(124,108,250,0.25);
+    color: var(--accent2);
+  }
+
+  /* Emotions radar */
+  .emotions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+  .emotion-item {
+    background: var(--bg3); border-radius: var(--radius-sm);
+    padding: 10px 12px;
+  }
+  .emotion-name { font-size: 11px; font-family: var(--font-mono); color: var(--muted); margin-bottom: 6px; text-transform: capitalize; }
+  .emotion-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .emotion-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+  .emotion-pct { font-size: 12px; color: var(--text); font-family: var(--font-mono); margin-top: 4px; }
+
+  /* Keywords */
+  .keywords-wrap { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .keyword-tag {
+    padding: 5px 12px; border-radius: 20px; font-size: 12px;
+    font-family: var(--font-mono); border: 1px solid;
+    transition: transform 0.15s;
+  }
+  .keyword-tag:hover { transform: scale(1.05); }
+  .keyword-tag.positive { background: var(--pos-bg); color: var(--pos); border-color: rgba(52,211,153,0.25); }
+  .keyword-tag.negative { background: var(--neg-bg); color: var(--neg); border-color: rgba(248,113,113,0.25); }
+  .keyword-tag.neutral { background: rgba(255,255,255,0.04); color: var(--muted); border-color: var(--border); }
+
+  /* Trend chart */
+  .chart-wrap { position: relative; width: 100%; height: 200px; margin-top: 16px; }
+
+  /* History */
+  .history-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; max-height: 280px; overflow-y: auto; }
+  .history-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px; background: var(--bg3); border-radius: var(--radius-sm);
+    border: 1px solid var(--border); cursor: pointer; transition: border-color 0.15s;
+  }
+  .history-item:hover { border-color: var(--border2); }
+  .history-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .history-dot.positive { background: var(--pos); }
+  .history-dot.negative { background: var(--neg); }
+  .history-dot.neutral { background: var(--neu); }
+  .history-text { font-size: 13px; color: var(--muted); line-height: 1.4; flex: 1; }
+  .history-score { font-size: 11px; font-family: var(--font-mono); color: var(--muted); flex-shrink: 0; }
+
+  /* Loading spinner */
+  .spinner {
+    width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.2);
+    border-top-color: white; border-radius: 50%;
+    animation: spin 0.6s linear infinite; display: inline-block; vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center; padding: 40px 20px; color: var(--muted);
+  }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.3; }
+  .empty-text { font-size: 14px; line-height: 1.6; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .divider { height: 1px; background: var(--border); }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 100;
+    background: var(--bg2); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); padding: 12px 16px;
+    font-size: 13px; color: var(--text);
+    transform: translateY(100px); opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">🧠</div>
+      <div>
+        <div class="logo-text">SentimentAI</div>
+        <div class="logo-sub">NLP Analytics v1.0</div>
+      </div>
+    </div>
+
+    <nav class="nav-section">
+      <div class="nav-label">Analysis</div>
+      <div class="nav-item active" onclick="showSection('analyze')">
+        <span class="nav-icon">◈</span> Text Analyzer
+      </div>
+      <div class="nav-item" onclick="showSection('batch')">
+        <span class="nav-icon">◫</span> Batch Mode
+      </div>
+      <div class="nav-item" onclick="showSection('trends')">
+        <span class="nav-icon">◬</span> Trend Dashboard
+      </div>
+    </nav>
+
+    <nav class="nav-section">
+      <div class="nav-label">History</div>
+      <div id="sidebar-history" style="display:flex;flex-direction:column;gap:4px;">
+        <div style="font-size:12px;color:var(--muted);padding:4px 8px;">No analyses yet</div>
+      </div>
+    </nav>
+
+    <div class="status-badge">
+      <div class="status-dot"></div>
+      API Connected · FastAPI
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="page-title" id="page-title">Text Analyzer</div>
+        <div class="page-sub" id="page-sub">Real-time NLP sentiment scoring with emotion detection</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost" onclick="clearAll()">Clear</button>
+        <button class="btn btn-ghost" onclick="exportResults()">Export JSON</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- Input Panel -->
+      <div class="input-panel" id="analyze-panel">
+        <div class="panel-header">
+          <div class="panel-title">Input Text</div>
+          <div class="panel-badge">LIVE ANALYSIS</div>
+        </div>
+        <textarea
+          class="input-area"
+          id="input-text"
+          placeholder="Enter text to analyze — reviews, tweets, feedback, articles..."
+          oninput="updateCharCount()"
+        ></textarea>
+        <div class="input-footer">
+          <span class="char-count" id="char-count">0 / 1000 chars</span>
+          <button class="sample-btn" onclick="loadSample()">Load sample text ↗</button>
+        </div>
+        <button class="analyze-btn" id="analyze-btn" onclick="analyzeText()">
+          Analyze Sentiment →
+        </button>
+      </div>
+
+      <!-- Batch Panel -->
+      <div class="input-panel" id="batch-panel" style="display:none;">
+        <div class="panel-header">
+          <div class="panel-title">Batch Analysis</div>
+          <div class="panel-badge">UP TO 50 TEXTS</div>
+        </div>
+        <textarea
+          class="input-area"
+          id="batch-text"
+          placeholder="Enter one text per line..."
+          style="min-height:160px;"
+        ></textarea>
+        <div style="margin-top:12px;">
+          <button class="analyze-btn" onclick="analyzeBatch()">Run Batch Analysis →</button>
+        </div>
+      </div>
+
+      <!-- Metrics Row -->
+      <div class="metrics-grid" id="metrics-grid">
+        <div class="metric-card" id="mc-sentiment">
+          <div class="metric-label">Sentiment</div>
+          <div class="metric-value" id="mv-sentiment" style="color:var(--muted)">—</div>
+          <div class="metric-sub">classification</div>
+        </div>
+        <div class="metric-card" id="mc-score">
+          <div class="metric-label">Score</div>
+          <div class="metric-value" id="mv-score" style="color:var(--muted)">—</div>
+          <div class="metric-sub">0 = neg · 1 = pos</div>
+        </div>
+        <div class="metric-card" id="mc-confidence">
+          <div class="metric-label">Confidence</div>
+          <div class="metric-value" id="mv-confidence" style="color:var(--muted)">—</div>
+          <div class="metric-sub">model certainty</div>
+        </div>
+        <div class="metric-card" id="mc-words">
+          <div class="metric-label">Word Count</div>
+          <div class="metric-value" id="mv-words" style="color:var(--muted)">—</div>
+          <div class="metric-sub">tokens processed</div>
+        </div>
+      </div>
+
+      <!-- Results Row -->
+      <div class="results-grid" id="results-section" style="display:none;">
+        <!-- Sentiment Panel -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Sentiment Result</div>
+          </div>
+          <div class="sentiment-display">
+            <div class="sentiment-label" id="result-label">—</div>
+            <div class="score-bar-wrap">
+              <div class="score-bar-labels">
+                <span>Negative</span><span>Neutral</span><span>Positive</span>
+              </div>
+              <div class="score-bar-track">
+                <div class="score-bar-fill" id="score-bar" style="width:50%;background:var(--neu)"></div>
+              </div>
+            </div>
+            <div class="confidence-pill">
+              <span>⬡</span>
+              <span id="conf-text">Confidence: —</span>
+            </div>
+          </div>
+          <div class="divider" style="margin:16px 0;"></div>
+          <div class="panel-header">
+            <div class="panel-title">Keywords</div>
+          </div>
+          <div class="keywords-wrap" id="keywords-wrap">
+            <div style="color:var(--muted);font-size:13px;">Analyze text to see keywords</div>
+          </div>
+        </div>
+
+        <!-- Emotions Panel -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Emotion Profile</div>
+            <div class="panel-badge">WHEEL</div>
+          </div>
+          <div class="emotions-grid" id="emotions-grid">
+            <div class="empty-state" style="grid-column:1/-1;">
+              <div class="empty-icon">◉</div>
+              <div class="empty-text">Analyze text to see emotion breakdown</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trend Chart -->
+      <div class="panel" id="trend-panel">
+        <div class="panel-header">
+          <div class="panel-title">Sentiment Trend</div>
+          <div class="panel-badge">14-DAY HISTORY</div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="trendChart" role="img" aria-label="Line chart showing 14-day sentiment trend with positive, negative, and neutral scores over time"></canvas>
+        </div>
+      </div>
+
+      <!-- History Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Analysis History</div>
+        </div>
+        <div class="history-list" id="history-list">
+          <div class="empty-state">
+            <div class="empty-icon">◎</div>
+            <div class="empty-text">Your analysis history will appear here.<br/>Start by entering some text above.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'http://localhost:8000';
+let historyItems = [];
+let trendChart = null;
+let sampleIndex = 0;
+
+const SAMPLES = [
+  "The product quality is absolutely amazing! Best purchase I've made this year. The customer service team was incredibly helpful and resolved my issue within minutes.",
+  "I'm extremely disappointed with this service. The delivery was 2 weeks late, the packaging was damaged, and customer support was completely unhelpful.",
+  "It's an average product, nothing special. Does what it's supposed to do but nothing more. Delivery was on time and the price was reasonable.",
+  "Outstanding experience from start to finish! The team went above and beyond to ensure everything was perfect. I'm thrilled with the results.",
+  "This app keeps crashing and the interface is confusing. I've wasted hours trying to get basic features to work. Very frustrating experience.",
+];
+
+const EMOTION_COLORS = {
+  joy: '#34d399', anger: '#f87171', sadness: '#60a5fa',
+  fear: '#fb923c', surprise: '#c084fc', trust: '#2dd4bf'
+};
+
+// ── Init ──────────────────────────────────────────────────────────────────
+async function init() {
+  await loadTrend();
+}
+
+// ── UI sections ───────────────────────────────────────────────────────────
+function showSection(section) {
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+
+  document.getElementById('analyze-panel').style.display = section === 'analyze' ? '' : 'none';
+  document.getElementById('batch-panel').style.display = section === 'batch' ? '' : 'none';
+  document.getElementById('trend-panel').style.display = section === 'trends' ? '' : 'none';
+
+  const titles = {
+    analyze: ['Text Analyzer', 'Real-time NLP sentiment scoring with emotion detection'],
+    batch: ['Batch Analysis', 'Process multiple texts in parallel'],
+    trends: ['Trend Dashboard', '14-day historical sentiment analytics'],
+  };
+  document.getElementById('page-title').textContent = titles[section][0];
+  document.getElementById('page-sub').textContent = titles[section][1];
+}
+
+// ── Char count ────────────────────────────────────────────────────────────
+function updateCharCount() {
+  const text = document.getElementById('input-text').value;
+  document.getElementById('char-count').textContent = `${text.length} / 1000 chars`;
+}
+
+// ── Sample ────────────────────────────────────────────────────────────────
+function loadSample() {
+  document.getElementById('input-text').value = SAMPLES[sampleIndex % SAMPLES.length];
+  sampleIndex++;
+  updateCharCount();
+}
+
+// ── Analyze Single ────────────────────────────────────────────────────────
+async function analyzeText() {
+  const text = document.getElementById('input-text').value.trim();
+  if (!text) { showToast('Please enter some text to analyze'); return; }
+
+  const btn = document.getElementById('analyze-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Analyzing...';
+
+  try {
+    const res = await fetch(`${API}/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, source: 'dashboard' })
+    });
+
+    if (!res.ok) throw new Error('API error');
+    const data = await res.json();
+    renderResults(data);
+    addToHistory(data);
+
+  } catch (err) {
+    // Demo mode with built-in NLP when API is offline
+    const demo = generateDemoResult(text);
+    renderResults(demo);
+    addToHistory(demo);
+    showToast('Running in demo mode (API offline)');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Analyze Sentiment →';
+  }
+}
+
+// ── Demo mode fallback NLP ─────────────────────────────────────────────────
+function generateDemoResult(text) {
+  const pos_words = ['great','good','excellent','amazing','wonderful','love','best','happy','awesome','perfect','brilliant','outstanding','enjoy','recommend','satisfied','helpful','fast','easy','smooth','thrilled','excited','glad','grateful'];
+  const neg_words = ['bad','terrible','awful','horrible','poor','worst','hate','disappointed','frustrating','annoying','useless','broken','slow','difficult','confusing','waste','problem','fail','boring','angry','upset'];
+
+  const tokens = text.toLowerCase().match(/\b\w+\b/g) || [];
+  let pos = 0, neg = 0;
+  tokens.forEach(t => { if (pos_words.includes(t)) pos++; if (neg_words.includes(t)) neg++; });
+
+  const total = pos + neg;
+  const compound = total === 0 ? 0 : (pos - neg) / (total + 1);
+  const label = compound > 0.1 ? 'positive' : compound < -0.1 ? 'negative' : 'neutral';
+  const score = label === 'positive' ? 0.5 + compound * 0.5 : label === 'negative' ? 0.5 - Math.abs(compound) * 0.5 : 0.5;
+  const confidence = Math.min(0.95, Math.abs(compound) + 0.3);
+
+  const stopwords = new Set(['the','a','an','is','it','in','on','at','to','for','of','and','or','but','this','that','with','was','are','i','you','my','be','have']);
+  const wordCounts = {};
+  tokens.filter(t => !stopwords.has(t) && t.length > 2).forEach(t => wordCounts[t] = (wordCounts[t]||0)+1);
+  const keywords = Object.entries(wordCounts).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([word,count]) => ({
+    word, count, sentiment: pos_words.includes(word) ? 'positive' : neg_words.includes(word) ? 'negative' : 'neutral'
+  }));
+
+  const emotions = { joy: pos*0.4, anger: neg*0.4, sadness: neg*0.2, fear: neg*0.15, surprise: Math.random()*0.3, trust: pos*0.25 };
+  const etotal = Object.values(emotions).reduce((a,b)=>a+b,1e-9);
+  Object.keys(emotions).forEach(k => emotions[k] = +(emotions[k]/etotal).toFixed(4));
+
+  return {
+    text, sentiment: { label, score: +score.toFixed(4), compound: +compound.toFixed(4), confidence: +confidence.toFixed(4), pos: +(pos/(total+1e-9)).toFixed(4), neg: +(neg/(total+1e-9)).toFixed(4) },
+    emotions, keywords, metadata: { word_count: tokens.length, char_count: text.length, source: 'demo', analyzed_at: new Date().toISOString() }
+  };
+}
+
+// ── Render Results ─────────────────────────────────────────────────────────
+function renderResults(data) {
+  const { sentiment, emotions, keywords, metadata } = data;
+
+  // Metrics
+  const labelColor = sentiment.label === 'positive' ? 'var(--pos)' : sentiment.label === 'negative' ? 'var(--neg)' : 'var(--neu)';
+  const cls = sentiment.label === 'positive' ? 'active-pos pos' : sentiment.label === 'negative' ? 'active-neg neg' : 'active-neu neu';
+
+  document.getElementById('mv-sentiment').textContent = sentiment.label.charAt(0).toUpperCase() + sentiment.label.slice(1);
+  document.getElementById('mv-sentiment').style.color = labelColor;
+  document.getElementById('mv-score').textContent = sentiment.score.toFixed(2);
+  document.getElementById('mv-score').style.color = labelColor;
+  document.getElementById('mv-confidence').textContent = (sentiment.confidence * 100).toFixed(0) + '%';
+  document.getElementById('mv-confidence').style.color = 'var(--accent2)';
+  document.getElementById('mv-words').textContent = metadata.word_count;
+  document.getElementById('mv-words').style.color = 'var(--text)';
+
+  // Show results
+  document.getElementById('results-section').style.display = 'grid';
+
+  // Sentiment label
+  const labelEl = document.getElementById('result-label');
+  labelEl.textContent = sentiment.label.charAt(0).toUpperCase() + sentiment.label.slice(1);
+  labelEl.className = 'sentiment-label ' + sentiment.label;
+
+  // Score bar
+  const bar = document.getElementById('score-bar');
+  bar.style.width = (sentiment.score * 100) + '%';
+  bar.style.background = labelColor;
+
+  document.getElementById('conf-text').textContent = `Confidence: ${(sentiment.confidence*100).toFixed(1)}%`;
+
+  // Keywords
+  const kw = document.getElementById('keywords-wrap');
+  if (keywords && keywords.length) {
+    kw.innerHTML = keywords.map(k =>
+      `<span class="keyword-tag ${k.sentiment}">${k.word}${k.count > 1 ? ` ×${k.count}` : ''}</span>`
+    ).join('');
+  } else {
+    kw.innerHTML = '<span style="color:var(--muted);font-size:13px;">No significant keywords found</span>';
+  }
+
+  // Emotions
+  const eg = document.getElementById('emotions-grid');
+  if (emotions) {
+    const sorted = Object.entries(emotions).sort((a,b) => b[1]-a[1]);
+    eg.innerHTML = sorted.map(([emotion, val]) => `
+      <div class="emotion-item">
+        <div class="emotion-name">${emotion}</div>
+        <div class="emotion-bar">
+          <div class="emotion-fill" style="width:${(val*100).toFixed(1)}%;background:${EMOTION_COLORS[emotion]||'var(--accent)'}"></div>
+        </div>
+        <div class="emotion-pct">${(val*100).toFixed(1)}%</div>
+      </div>
+    `).join('');
+  }
+}
+
+// ── History ────────────────────────────────────────────────────────────────
+function addToHistory(data) {
+  historyItems.unshift(data);
+  if (historyItems.length > 20) historyItems.pop();
+  renderHistory();
+  renderSidebarHistory();
+}
+
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  if (!historyItems.length) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">◎</div><div class="empty-text">No history yet</div></div>`;
+    return;
+  }
+  list.innerHTML = historyItems.map((item, i) => `
+    <div class="history-item" onclick="reloadHistory(${i})">
+      <div class="history-dot ${item.sentiment.label}"></div>
+      <div class="history-text">${item.text.substring(0,100)}${item.text.length>100?'...':''}</div>
+      <div class="history-score">${(item.sentiment.confidence*100).toFixed(0)}%</div>
+    </div>
+  `).join('');
+}
+
+function renderSidebarHistory() {
+  const el = document.getElementById('sidebar-history');
+  if (!historyItems.length) {
+    el.innerHTML = `<div style="font-size:12px;color:var(--muted);padding:4px 8px;">No analyses yet</div>`;
+    return;
+  }
+  el.innerHTML = historyItems.slice(0,5).map((item, i) => `
+    <div class="nav-item" style="font-size:12px;" onclick="reloadHistory(${i})">
+      <span style="width:6px;height:6px;border-radius:50%;background:${item.sentiment.label==='positive'?'var(--pos)':item.sentiment.label==='negative'?'var(--neg)':'var(--neu)'};flex-shrink:0;"></span>
+      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${item.text.substring(0,28)}...</span>
+    </div>
+  `).join('');
+}
+
+function reloadHistory(i) {
+  const item = historyItems[i];
+  document.getElementById('input-text').value = item.text;
+  updateCharCount();
+  renderResults(item);
+}
+
+// ── Batch Analysis ─────────────────────────────────────────────────────────
+async function analyzeBatch() {
+  const raw = document.getElementById('batch-text').value.trim();
+  if (!raw) { showToast('Please enter texts, one per line'); return; }
+  const texts = raw.split('\n').filter(t => t.trim());
+
+  showToast(`Analyzing ${texts.length} texts...`);
+
+  try {
+    const res = await fetch(`${API}/analyze/batch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texts })
+    });
+    const data = await res.json();
+    renderBatchResults(data);
+  } catch {
+    // Demo fallback
+    const results = texts.map(text => ({ text, ...generateDemoResult(text) }));
+    const pos = results.filter(r => r.sentiment.label === 'positive').length;
+    const neg = results.filter(r => r.sentiment.label === 'negative').length;
+    const neu = results.length - pos - neg;
+    renderBatchResults({
+      summary: { total: results.length, positive: pos, negative: neg, neutral: neu,
+        positive_pct: +(pos/results.length*100).toFixed(1), negative_pct: +(neg/results.length*100).toFixed(1), neutral_pct: +(neu/results.length*100).toFixed(1) },
+      results
+    });
+  }
+}
+
+function renderBatchResults(data) {
+  const { summary, results } = data;
+  const el = document.getElementById('history-list');
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
+      <div class="metric-card" style="text-align:center;">
+        <div class="metric-label">Positive</div>
+        <div style="font-size:22px;font-family:var(--font-head);font-weight:800;color:var(--pos);margin:6px 0;">${summary.positive_pct}%</div>
+        <div class="metric-sub">${summary.positive} texts</div>
+      </div>
+      <div class="metric-card" style="text-align:center;">
+        <div class="metric-label">Negative</div>
+        <div style="font-size:22px;font-family:var(--font-head);font-weight:800;color:var(--neg);margin:6px 0;">${summary.negative_pct}%</div>
+        <div class="metric-sub">${summary.negative} texts</div>
+      </div>
+      <div class="metric-card" style="text-align:center;">
+        <div class="metric-label">Neutral</div>
+        <div style="font-size:22px;font-family:var(--font-head);font-weight:800;color:var(--neu);margin:6px 0;">${summary.neutral_pct}%</div>
+        <div class="metric-sub">${summary.neutral} texts</div>
+      </div>
+    </div>
+    ${results.map(r => `
+      <div class="history-item">
+        <div class="history-dot ${r.sentiment.label}"></div>
+        <div class="history-text">${r.text.substring(0,100)}${r.text.length>100?'...':''}</div>
+        <div class="history-score">${(r.sentiment.confidence*100).toFixed(0)}%</div>
+      </div>
+    `).join('')}
+  `;
+  showToast(`Batch complete: ${summary.total} texts analyzed`);
+}
+
+// ── Trend Chart ────────────────────────────────────────────────────────────
+async function loadTrend() {
+  try {
+    const res = await fetch(`${API}/trends?days=14`);
+    const data = await res.json();
+    renderTrend(data.data);
+  } catch {
+    // Demo trend data
+    const data = [];
+    let bp = 0.55;
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      bp = Math.max(0.2, Math.min(0.9, bp + (Math.random()-0.5)*0.08));
+      data.push({
+        date: d.toISOString().split('T')[0],
+        positive: +bp.toFixed(3),
+        negative: +((1-bp)*0.6).toFixed(3),
+        neutral: +(Math.random()*0.15+0.05).toFixed(3),
+        volume: Math.floor(Math.random()*180+20)
+      });
+    }
+    renderTrend(data);
+  }
+}
+
+function renderTrend(data) {
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  if (trendChart) trendChart.destroy();
+
+  trendChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.map(d => d.date.slice(5)),
+      datasets: [
+        { label: 'Positive', data: data.map(d => +(d.positive*100).toFixed(1)), borderColor: '#34d399', backgroundColor: 'rgba(52,211,153,0.08)', tension: 0.4, fill: true, borderWidth: 2, pointRadius: 3, pointHoverRadius: 5 },
+        { label: 'Negative', data: data.map(d => +(d.negative*100).toFixed(1)), borderColor: '#f87171', backgroundColor: 'rgba(248,113,113,0.06)', tension: 0.4, fill: true, borderWidth: 2, pointRadius: 3, pointHoverRadius: 5, borderDash: [5,3] },
+        { label: 'Neutral', data: data.map(d => +(d.neutral*100).toFixed(1)), borderColor: '#60a5fa', backgroundColor: 'rgba(96,165,250,0.04)', tension: 0.4, fill: false, borderWidth: 1.5, pointRadius: 2, borderDash: [3,3] },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#18181f', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
+          titleColor: '#f0f0f5', bodyColor: '#8888aa', padding: 10,
+          callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}%` }
+        }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#8888aa', font: { family: 'DM Mono', size: 10 }, autoSkip: false, maxRotation: 45 } },
+        y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#8888aa', font: { family: 'DM Mono', size: 10 }, callback: v => v + '%' }, min: 0, max: 100 }
+      }
+    }
+  });
+}
+
+// ── Utilities ──────────────────────────────────────────────────────────────
+function clearAll() {
+  document.getElementById('input-text').value = '';
+  document.getElementById('char-count').textContent = '0 / 1000 chars';
+  document.getElementById('results-section').style.display = 'none';
+  ['mv-sentiment','mv-score','mv-confidence','mv-words'].forEach(id => {
+    document.getElementById(id).textContent = '—';
+    document.getElementById(id).style.color = 'var(--muted)';
+  });
+}
+
+function exportResults() {
+  if (!historyItems.length) { showToast('No results to export'); return; }
+  const blob = new Blob([JSON.stringify(historyItems, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `sentiment-analysis-${Date.now()}.json`; a.click();
+  showToast('Exported successfully!');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── Start ──────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
