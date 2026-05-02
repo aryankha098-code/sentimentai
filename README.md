@@ -389,8 +389,8 @@ See [LICENSE](LICENSE) for full text.
 Built by **Aryan Khalique** — Data Scientist & ML Engineer available for freelance work.
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=flat-square&logo=linkedin)](https://www.linkedin.com/in/aryan-khalique-code098/)
-[![Upwork](https://img.shields.io/badge/Upwork-Hire_Me-6FDA44?style=flat-square&logo=upwork)](https://upwork.com/freelancers/yourprofile)
-[![Fiverr](https://img.shields.io/badge/Fiverr-Order_Now-1DBF73?style=flat-square&logo=fiverr)](https://fiverr.com/yourusername)
+[![Upwork](https://img.shields.io/badge/Upwork-Hire_Me-6FDA44?style=flat-square&logo=upwork)](https://www.upwork.com/freelancers/~017fcbcd1f3b9b009f?mp_source=share)
+[![Fiverr](https://img.shields.io/badge/Fiverr-Order_Now-1DBF73?style=flat-square&logo=fiverr)](https://www.fiverr.com/s/996x000)
 
 ---
 
