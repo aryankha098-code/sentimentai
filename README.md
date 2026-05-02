@@ -27,19 +27,19 @@ powered by a custom NLP engine and a professional FastAPI + JavaScript frontend.
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│  🧠 SentimentAI          [Text Analyzer] [Batch] [Trends]				 │
+│  🧠 SentimentAI          [Text Analyzer] [Batch] [Trends]        │
 ├──────────────┬───────────────────────────────────────────────────┤
 │              │  ┌───────────────────────────────────────────┐    │
-│  ◈ Analyze	 │    Input Text                  LIVE ANALYSIS  	   │
-│  ◫ Batch  	 │  	┌───────────────────────────────────────┐  	   │
-│  ◬ Trends 	 │      Enter text to analyze...                 	   │
+│  ◈ Analyze   │  │ Input Text                  LIVE ANALYSIS │    │
+│  ◫ Batch     │  │ ┌───────────────────────────────────────┐ │    │
+│  ◬ Trends    │  │ │ Enter text to analyze...              │ │    │
 │              │  │ └───────────────────────────────────────┘ │    │
 │  History     │  │           [ Analyze Sentiment → ]         │    │
 │  ─────────── │  └───────────────────────────────────────────┘    │
-│  ✅ Great..	 │                                             			 │
-│  ❌ Terri..	 │  Sentiment    Score     Confidence    Words    	 │
-│  ➖ It's ..	 │  Positive     0.857     99%           12       	 │
-│              │                                                 	 │
+│  ✅ Great... │                                                   │
+│  ❌ Terri... │  Sentiment    Score     Confidence    Words       │
+│  ➖ It's ... │  Positive     0.857     99%           12          │
+│              │                                                   │
 │  ● API Live  │  [Sentiment Result]      [Emotion Profile]        │
 └──────────────┴───────────────────────────────────────────────────┘
 ```
@@ -48,17 +48,17 @@ powered by a custom NLP engine and a professional FastAPI + JavaScript frontend.
 
 ## ✨ Features
 
-| Feature | Description 
-|---|---
-| **Real-time Sentiment** | Positive / Negative / Neutral classification with compound scoring 
-| **Emotion Detection** | 6-axis wheel — joy, anger, sadness, fear, surprise, trust 
-| **Keyword Extraction** | Sentiment-tagged keywords with frequency counts 
-| **Batch Processing** | Analyze up to 50 texts at once with aggregate statistics 
-| **Trend Dashboard** | 14-day historical sentiment chart with volume bars 
-| **Analysis History** | Click-to-reload past analyses from the sidebar 
-| **JSON Export** | One-click structured export of all results 
-| **Offline Demo Mode** | Frontend works without the backend — great for client demos 
-| **Swagger UI** | Auto-generated interactive API docs at `/docs` 
+| Feature | Description |
+|---|---|
+| **Real-time Sentiment** | Positive / Negative / Neutral classification with compound scoring |
+| **Emotion Detection** | 6-axis wheel — joy, anger, sadness, fear, surprise, trust |
+| **Keyword Extraction** | Sentiment-tagged keywords with frequency counts |
+| **Batch Processing** | Analyze up to 50 texts at once with aggregate statistics |
+| **Trend Dashboard** | 14-day historical sentiment chart with volume bars |
+| **Analysis History** | Click-to-reload past analyses from the sidebar |
+| **JSON Export** | One-click structured export of all results |
+| **Offline Demo Mode** | Frontend works without the backend — great for client demos |
+| **Swagger UI** | Auto-generated interactive API docs at `/docs` |
 
 ---
 
@@ -388,9 +388,9 @@ See [LICENSE](LICENSE) for full text.
 
 Built by **Aryan Khalique** — Data Scientist & ML Engineer available for freelance work.
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=flat-square&logo=linkedin)]([https://linkedin.com/in/yourhandle](https://www.linkedin.com/in/aryan-khalique-code098/))
-[![Upwork](https://www.upwork.com/freelancers/~017fcbcd1f3b9b009f?mp_source=share)](https://www.upwork.com/freelancers/~017fcbcd1f3b9b009f?mp_source=share)
-[![Fiverr](https://img.shields.io/badge/Fiverr-Order_Now-1DBF73?style=flat-square&logo=fiverr)]([https://fiverr.com/yourusername](https://www.fiverr.com/sellers/aryankhan02/))
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=flat-square&logo=linkedin)](https://www.linkedin.com/in/aryan-khalique-code098/)
+[![Upwork](https://img.shields.io/badge/Upwork-Hire_Me-6FDA44?style=flat-square&logo=upwork)](https://upwork.com/freelancers/yourprofile)
+[![Fiverr](https://img.shields.io/badge/Fiverr-Order_Now-1DBF73?style=flat-square&logo=fiverr)](https://fiverr.com/yourusername)
 
 ---
 
