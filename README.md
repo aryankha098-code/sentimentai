@@ -1,4 +1,4 @@
-# 🧠 SentimentAI — NLP Sentiment Analysis Dashboard
+#  SentimentAI — NLP Sentiment Analysis Dashboard
 
 A production-grade sentiment analysis platform with a FastAPI ML backend and a
 professional dark-mode React dashboard. Built to demonstrate real NLP engineering
